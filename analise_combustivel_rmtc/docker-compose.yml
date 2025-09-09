@@ -1,0 +1,19 @@
+services:
+  analise-combustivel:
+    build: .
+    # Monte o código local para desenvolvimento iterativo
+    volumes:
+      - ./:/app
+      # Se quiser que o .env local seja visto como arquivo (além do env_file)
+      # - ./.env:/app/.env:ro
+    # Carrega variáveis do seu .env da raiz (DB_*, etc.)
+    env_file:
+      - .env
+    environment:
+      - TZ=America/Sao_Paulo
+      # Se seu código espera .env no diretório do script, o load_dotenv() já cobre,
+      # mas você pode indicar explicitamente:
+      # - DOTENV_PATH=/app/.env
+    working_dir: /app
+    # Você pode definir o comando no run (ver exemplos abaixo)
+    # command: bash -lc "echo pronto"

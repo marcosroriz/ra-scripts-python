@@ -174,7 +174,7 @@ class Rule(object):
             FROM 
                 view_pecas_desconsiderando_combustivel pg 
             WHERE 
-                to_timestamp(pg."DATA", 'DD/MM/YYYY') BETWEEN CURRENT_DATE - INTERVAL '{data_periodo_regra} days' AND CURRENT_DATE + INTERVAL '1 day'
+                to_timestamp(pg."DATA", 'DD/MM/YYYY') BETWEEN CURRENT_DATE - INTERVAL '{min_dias} days' AND CURRENT_DATE + INTERVAL '2 days'
             GROUP BY 
                 pg."OS"
         ),
@@ -188,7 +188,7 @@ class Rule(object):
             ON 
                 m."KEY_HASH" = odc."KEY_HASH" 
             WHERE
-                "DATA DA ABERTURA DA OS"::timestamp BETWEEN CURRENT_DATE - INTERVAL '{data_periodo_regra} days' AND CURRENT_DATE + INTERVAL '1 day'
+                "DATA DA ABERTURA DA OS"::timestamp BETWEEN CURRENT_DATE - INTERVAL '{min_dias} days' AND CURRENT_DATE + INTERVAL '2 days'
                 {subquery_modelos_str}
                 {subquery_oficinas_str}
                 {subquery_secoes_str}

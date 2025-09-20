@@ -55,12 +55,12 @@ class CRUDWppService(object):
         wp_zapi_link_image_url=WP_ZAPI_LINK_IMAGE_URL,
         dashboard_url=DASHBOARD_URL,
     ):
-        self.wp_zapi_url = WP_ZAPI_URL
-        self.wp_zapi_send_text_url = WP_ZAPI_SEND_TEXT_URL
-        self.wp_zapi_send_link_url = WP_ZAPI_SEND_LINK_URL
-        self.wp_zapi_token = WP_ZAPI_TOKEN
-        self.wp_zapi_link_image_url = WP_ZAPI_LINK_IMAGE_URL
-        self.dashboard_url = DASHBOARD_URL
+        self.wp_zapi_url = wp_zapi_url
+        self.wp_zapi_send_text_url = wp_zapi_send_text_url
+        self.wp_zapi_send_link_url = wp_zapi_send_link_url
+        self.wp_zapi_token = wp_zapi_token
+        self.wp_zapi_link_image_url = wp_zapi_link_image_url
+        self.dashboard_url = dashboard_url
 
         self.headers = {
             "Client-Token": self.wp_zapi_token,
@@ -125,4 +125,5 @@ class CRUDWppService(object):
 🔗 Relatório: {link_url}
 """
 
+        print(f"Mandando msg da OS {numero_os} para o telefone: {telefone_destino}")
         self.__wpp_send_link(msg_str, title_str, link_url, link_description_str, telefone_destino)

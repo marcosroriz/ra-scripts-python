@@ -219,7 +219,7 @@ def main():
     # Para cada regra, verifica se alguma nova OS se encaixa na regra
     for r in regras:
         regra_dados_dict = r.get_dados_regra()
-        nome_regra = regra_dados_dict["noem_regra"]
+        nome_regra = regra_dados_dict["nome_regra"]
         df_todas_os_regras = r.get_os_filtradas_pela_regra()
 
         num_os_novas_na_regra = df_todas_os_regras["NUMERO DA OS"].isin(df_os_novas["NUMERO DA OS"]).sum()
@@ -228,7 +228,7 @@ def main():
         if num_os_novas_na_regra > 0:
             # Salva os dados da regra
             r.salvar_dados_regra(df_os_filtradas)
-            print(f"SALVOU {num_os_novas_na_regra} OSs na regra {regra_dados_dict['nome_regra']}")
+            print(f"SALVOU {num_os_novas_na_regra} OSs na regra {nome_regra}")
 
             # Dispara WhatsApp se aplicável
             if regra_dados_dict["wpp_ativo"]:

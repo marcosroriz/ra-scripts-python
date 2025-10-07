@@ -193,11 +193,16 @@ def main():
 
     # Faz o download das OSs
     os_download_service = OSDownload(RA_API_URL, RA_API_KEY)
-    df_os = os_download_service.download_os(data_inicio_str, data_fim_str)
+    df_os_api = os_download_service.download_os(data_inicio_str, data_fim_str)
 
     # Obtem as novas OSs
     os_manager_service = OSManager(pg_engine)
-    df_os_novas = os_manager_service.get_os_novas(df_os)
+    df_os_novas = os_manager_service.get_os_novas(df_os_api)
+
+    # Obtem as OS que fecharam agora (não tinham data de fechamento prévia)
+    # Como o sistema permite que OS sejam criadas sem colaboradores, é necessário atualizar as OS com as informações
+    # posteriores para que se verifique a questão do retrabalho
+    df_os_fecharam_agora = os_manager_service.get_os_fecharam_agora(df_os_api)
 
     # Se não houver novas OS, encerra o script
     if df_os_novas.empty:
@@ -206,8 +211,11 @@ def main():
     else:
         print(f"Total de novas OSs: {len(df_os_novas)}.")
 
-    # Faz o insert dessa novas OSs na base de dados
+    # Faz o insert das novas OSs na base de dados
     os_manager_service.insert_os_novas(df_os_novas)
+
+    # Atualiza a data de fechamento da OS que foram abertas de forma padrão (COLABORADOR = 0) e que foram fechadas
+    os_manager_service.fecha_os_com_data_nulas(df_os_fecharam_agora)
 
     # Refresh das views
     os_manager_service.refresh_views()
@@ -220,24 +228,25 @@ def main():
     for r in regras:
         regra_dados_dict = r.get_dados_regra()
         nome_regra = regra_dados_dict["nome_regra"]
-        df_todas_os_regras = r.get_os_filtradas_pela_regra()
+        df_novas_os_regra = r.get_novas_os_filtradas_pela_regra()
 
-        num_os_novas_na_regra = df_todas_os_regras["NUMERO DA OS"].isin(df_os_novas["NUMERO DA OS"]).sum()
-        df_os_filtradas = df_todas_os_regras[df_todas_os_regras["NUMERO DA OS"].isin(df_os_novas["NUMERO DA OS"])]
-
-        if num_os_novas_na_regra > 0:
+        if df_novas_os_regra.empty:
+            print(f"{nome_regra} não possui novas OS")
+        else:
+            print(f"{nome_regra} detectou {len(df_novas_os_regra)} OSs")
+            
             # Salva os dados da regra
-            r.salvar_dados_regra(df_os_filtradas)
-            print(f"SALVOU {num_os_novas_na_regra} OSs na regra {nome_regra}")
+            r.salvar_dados_regra(df_novas_os_regra)
+            print(f"SALVOU {len(df_novas_os_regra)} OSs na regra {nome_regra}")
 
             # Dispara WhatsApp se aplicável
             if regra_dados_dict["wpp_ativo"]:
-                for _, os_dados_dict in df_os_filtradas.iterrows():
+                for _, os_dados_dict in df_novas_os_regra.iterrows():
                     envia_wpp(wpp_service, regra_dados_dict, os_dados_dict)
 
-            # Dispara E-mail se aplicável
+            # # Dispara E-mail se aplicável
             if regra_dados_dict["email_ativo"]:
-                for _, os_dados_dict in df_os_filtradas.iterrows():
+                for _, os_dados_dict in df_novas_os_regra.iterrows():
                     envia_email(email_service, regra_dados_dict, os_dados_dict)
 
 

@@ -130,11 +130,12 @@ class Rule(object):
 
         return dict_regra
 
-    def get_os_filtradas_pela_regra(self):
-        """Função para obter a prévia das OS detectadas pela regra (que será usado para envio do e-mail / WhatsApp)"""
+    def get_novas_os_filtradas_pela_regra(self):
+        """Função para obter a prévia das novas OS detectadas pela regra (que será usado para envio do e-mail / WhatsApp)"""
 
         dados_regra = self.regra_dict
 
+        id_regra = dados_regra["id_regra"]
         data_periodo_regra = dados_regra["data_periodo_regra"]
         min_dias_retrabalho = dados_regra["min_dias_retrabalho"]
         lista_modelos = dados_regra["lista_modelos"]
@@ -144,16 +145,16 @@ class Rule(object):
         alerta_alvo = dados_regra["alerta_alvo"]
 
         # Obtém as OS filtradas pela regra
-        df_os_filtradas = self.__get_os_da_regra(
-            data_periodo_regra, min_dias_retrabalho, lista_modelos, lista_oficinas, lista_secoes, lista_os, alerta_alvo
+        df_os_filtradas = self.__get_novas_os_da_regra(
+            id_regra, data_periodo_regra, min_dias_retrabalho, lista_modelos, lista_oficinas, lista_secoes, lista_os, alerta_alvo
         )
 
         self.df_regra = df_os_filtradas
 
         return df_os_filtradas
 
-    def __get_os_da_regra(
-        self, data_periodo_regra, min_dias, lista_modelos, lista_oficinas, lista_secaos, lista_os, checklist_alvo
+    def __get_novas_os_da_regra(
+        self, id_regra, data_periodo_regra, min_dias, lista_modelos, lista_oficinas, lista_secaos, lista_os, checklist_alvo
     ):
         # Subqueries
         subquery_modelos_str = subquery_modelos(lista_modelos, termo_all="TODOS")
@@ -200,13 +201,22 @@ class Rule(object):
             FROM os_avaliadas os
             LEFT JOIN pecas_agg p
             ON os."NUMERO DA OS" = p."OS"
+        ),
+        os_regra AS (
+            SELECT *
+            FROM os_avaliadas_com_pecas os
+            LEFT JOIN colaboradores_frotas_os cfo 
+            ON os."COLABORADOR QUE EXECUTOU O SERVICO" = cfo.cod_colaborador
         )
         SELECT *
-        FROM os_avaliadas_com_pecas os
-        LEFT JOIN colaboradores_frotas_os cfo 
-        ON os."COLABORADOR QUE EXECUTOU O SERVICO" = cfo.cod_colaborador
+        FROM os_regra
+        WHERE os_regra."NUMERO DA OS" NOT IN (
+            SELECT os_num
+            FROM relatorio_regra_monitoramento_os
+            WHERE id_regra={id_regra}
+        )
         """
-
+        print(query)
         # Executa a query
         df = pd.read_sql(query, self.pg_engine)
 

@@ -303,7 +303,7 @@ class BusLineCombAnalyzer(object):
             AND encontrou_linha = TRUE
             AND encontrou_numero_sublinha = '{self.bus_line.numero_sublinha}'
             AND encontrou_sentido_linha = '{self.bus_line.sentido_linha_overlap}'
-            AND km_por_litro > 0
+            AND km_por_litro > 0.5
             AND km_por_litro < 10
             {subquery_dias_semana}
             AND (

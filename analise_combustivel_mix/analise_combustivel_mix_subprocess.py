@@ -96,11 +96,11 @@ TAMANHO_BUFFER_LINHA = 15
 # Buffer dos pontos extremos
 # Para linhas menores que 10km, o buffer é de 150m
 # Para linhas maiores que 10km, o buffer é de 300m
-TAMANHO_BUFFER_PONTOS_EXTREMOS_LINHA_PEQUENA = 150
-TAMANHO_BUFFER_PONTOS_EXTREMOS_LINHA_GRANDE = 300
+TAMANHO_BUFFER_PONTOS_EXTREMOS_LINHA_PEQUENA = 100
+TAMANHO_BUFFER_PONTOS_EXTREMOS_LINHA_GRANDE = 250
 
 # Buffer do veículo
-TAMANHO_BUFFER_POSICAO_VEICULO = 300
+TAMANHO_BUFFER_POSICAO_VEICULO = 125
 
 # Buffer de tempo em minutos
 TEMPO_BUFFER = 10
@@ -693,9 +693,11 @@ def main(data_baixar, vec_asset_id):
     df_veiculos = pd.DataFrame()
 
     # Debug variables
-    # data_baixar = "2025-05-16"
-    # vec_asset_id = 1259271191808299008
-
+    # data_baixar = "2025-09-12"
+    #vec_asset_id = 1344837246205296640 # 5017
+    #vec_asset_id = 1344825662024634368 #50480
+    #vec_asset_id = 1344824845351702528 #50485
+    # vec_asset_id = 1589151677707223040 #50057
     # Obtém o veículo a ser processado
     df_veiculos = pgDB.read_sql_safe(
         f"""

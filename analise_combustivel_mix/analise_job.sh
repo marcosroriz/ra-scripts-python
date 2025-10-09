@@ -16,9 +16,9 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate ra
 
 # Lista de datas (ordenadas e sem duplicadas)
-# Gera a lista de datas de 30 dias até hoje
-# start_date=$(date -I -d "$end_date - 30 days")
-start_date="2025-01-01"
+# Gera a lista de datas de 7 dias até hoje
+start_date=$(date -I -d "$end_date - 7 days")
+#start_date="2025-09-28"
 end_date=$(date +"%Y-%m-%d")
 
 datas=()

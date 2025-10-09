@@ -215,12 +215,12 @@ class DiscoverBusLinesAlgorithm(object):
 
             # Threshold overlap muda conforme o tamanho da linha
             tam_linha_encontrada = df_maior_overlap_linha["tamanhokm"].values[0]
-            if tam_linha_encontrada <= 5:
-                threshold_overlap = 97
-            elif tam_linha_encontrada <= 10:
-                threshold_overlap = 95
-            else:
-                threshold_overlap = 90
+            # if tam_linha_encontrada <= 5:
+            #     threshold_overlap = 97
+            # elif tam_linha_encontrada <= 10:
+            #     threshold_overlap = 95
+            # else:
+            #     threshold_overlap = 90
             
             velocidade_veiculo = tam_linha_encontrada / tempo_viagem_h if tempo_viagem_h >  0 else 0
 

@@ -8,11 +8,8 @@ import pandas as pd
 import datetime as dt
 
 # BD
-import psycopg2 as pg
 import sqlalchemy
-from sqlalchemy import create_engine
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.sql import text
 
 
 ##########################################################

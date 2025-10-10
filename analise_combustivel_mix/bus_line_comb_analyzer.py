@@ -197,9 +197,6 @@ class BusLineCombAnalyzer(object):
             stmt = insert(tabela_rmtc_viagens_analise).values(df_salvar.to_dict(orient="records"))
             stmt = stmt.on_conflict_do_nothing(index_elements=["dia", "num_viagem", "vec_asset_id"])
             conn.execute(stmt)
-            # df_salvar.to_sql(
-            # tabela_rmtc_viagens_analise, conn, if_exists="append", index=False
-            # )
 
     def __get_time_slot_viagem(self):
         data_str = self.bus_line.timestamp_inicio

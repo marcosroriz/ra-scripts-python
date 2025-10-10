@@ -39,7 +39,6 @@
 # Import de sistema
 import gc
 import os
-import sys
 
 # DotEnv
 from dotenv import load_dotenv

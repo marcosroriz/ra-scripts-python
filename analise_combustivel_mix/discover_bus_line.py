@@ -8,21 +8,11 @@
 ###################################################################################
 
 # Imports básicos
-import json
 import pandas as pd
-
-# Import de datas
-import datetime as dt
-from datetime import datetime, timedelta
 
 # Biblioteca espaciais
 import geopandas as gpd
-from shapely.geometry import Point
 from shapely.ops import unary_union
-from shapely.geometry import shape, MultiLineString, MultiPolygon
-
-# Banco de Dados
-from sqlalchemy import create_engine, text
 
 # Classe com a estrutura da linha
 from bus_line_trip import BusLineInMixTrip
@@ -215,12 +205,6 @@ class DiscoverBusLinesAlgorithm(object):
 
             # Threshold overlap muda conforme o tamanho da linha
             tam_linha_encontrada = df_maior_overlap_linha["tamanhokm"].values[0]
-            # if tam_linha_encontrada <= 5:
-            #     threshold_overlap = 97
-            # elif tam_linha_encontrada <= 10:
-            #     threshold_overlap = 95
-            # else:
-            #     threshold_overlap = 90
             
             velocidade_veiculo = tam_linha_encontrada / tempo_viagem_h if tempo_viagem_h >  0 else 0
 
@@ -235,11 +219,6 @@ class DiscoverBusLinesAlgorithm(object):
                     f"TEMPO (MIN) {(tempo_viagem_seg/60):5.2f}",
                     f"VEL: {velocidade_veiculo:7.2f} km/h"
                 )
-
-
-            # Corrida anomala
-            # if curr_idx > 1000 and maior_overlap <= 25 and total_posicoes >= 5000:
-            #    break
 
             if maior_overlap < threshold_overlap or tempo_viagem_seg <= tempo_min_viagem:
                 curr_idx += 1

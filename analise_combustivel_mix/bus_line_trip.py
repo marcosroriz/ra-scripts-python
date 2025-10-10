@@ -4,18 +4,11 @@
 # Classe que representa uma viagem do ônibus da RA dentro de uma trip da Mix
 
 # Imports básicos
-from io import StringIO
-import json
 import pandas as pd
 
 # Import de datas
-import datetime as dt
 from datetime import datetime
 import holidays
-
-# Banco de Dados
-from sqlalchemy import create_engine, text
-
 
 ###################################################################################
 # Função utilitária e constantes

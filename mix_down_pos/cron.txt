@@ -1,0 +1,1 @@
+0 2 * * * /home/grupo_fctufg/down_pos.sh

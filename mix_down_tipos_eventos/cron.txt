@@ -1,0 +1,1 @@
+0 0 * * 0 /home/grupo_fctufg/down_tipos_eventos.sh

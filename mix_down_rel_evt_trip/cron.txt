@@ -1,0 +1,1 @@
+0 13 * * * /home/grupo_fctufg/down_rel_evt_trip.sh

@@ -1,0 +1,1 @@
+0 1 * * * /home/grupo_fctufg/down_tst_combs.sh

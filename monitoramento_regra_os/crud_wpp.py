@@ -88,7 +88,7 @@ class CRUDWppService(object):
         telefone_destino,
     ):
         payload = {
-            "phone": telefone_destino,
+            "phone": formatar_telefone(telefone_destino),
             "message": msg_str,
             "image": self.wp_zapi_link_image_url,
             "title": title_str,

@@ -18,7 +18,7 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate ra
 
 # Executa o script
-python monitoramento_regra.py >> /home/grupo_fctufg/logs/$(date +\%Y-\%m-\%d)-monitoramento-regra.txt
+python monitoramento_regra_os.py >> /home/grupo_fctufg/logs/$(date +\%Y-\%m-\%d)-monitoramento-regra-os.txt
 
 echo "TERMINO DO SCRIPT"
 echo $(date)

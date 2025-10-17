@@ -138,8 +138,15 @@ if __name__ == "__main__":
     # Verifica se há veículos que não estão no banco de dados
     df_veiculos_api_not_db = df_veiculos_api[~df_veiculos_api["AssetId"].isin(df_veiculos_db["AssetId"])]
 
-    # Insere os veículos que não estão no banco de dados
-    df_veiculos_api_not_db.to_sql("veiculos_api", pg_engine, if_exists="append", index=False)
+    if not df_veiculos_api_not_db.empty:
+        # Remove colunas não utilizadas
+        db_colunas = [col for col in df_veiculos_api.columns if col in df_veiculos_db.columns]
+        df_veiculos_api_not_db_normalized = df_veiculos_api_not_db[db_colunas]
+        
+        # Insere os veículos que não estão no banco de dados
+        df_veiculos_api_not_db_normalized.to_sql("veiculos_api", pg_engine, if_exists="append", index=False)
 
-    # Imprime o número de veículos que foram inseridos
-    print(f"Número de veículos inseridos: {len(df_veiculos_api_not_db)}")
+        # Imprime o número de veículos que foram inseridos
+        print(f"Número de veículos inseridos: {len(df_veiculos_api_not_db)}")
+    else:
+        print("Não inseri nenhum veículo")

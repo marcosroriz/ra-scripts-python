@@ -1,0 +1,1 @@
+* * * * * /bin/bash /home/grupo_fctufg/down_rmtc.sh

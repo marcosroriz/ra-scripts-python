@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Cron para rodar analise_combustivel_rmtc
+# Cron para rodar analise_combustivel_rmtc_mix
 
 # CD na pasta do script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

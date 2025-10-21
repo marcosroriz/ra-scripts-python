@@ -99,7 +99,7 @@ sequenceDiagram
 
     loop Processa cada linha l
         activate Main
-        Main->>API_RA: obtem kml da linha *l*
+        Main->>API_RA: obtém kml da linha *l*
         activate API_RA
         API_RA->>Main: kml da linha l
         deactivate API_RA

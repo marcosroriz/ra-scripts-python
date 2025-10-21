@@ -1,0 +1,7 @@
+pandas
+numpy
+python-dotenv
+click
+sqlalchemy
+psycopg2
+Unidecode

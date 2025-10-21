@@ -1,0 +1,15 @@
+pandas
+numpy
+python-dotenv
+click
+sqlalchemy
+requests
+psycopg2-binary
+geopandas
+shapely
+geojson
+protobuf
+xlsxwriter
+geojson-length
+fastkml
+lxml

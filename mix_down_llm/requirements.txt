@@ -1,9 +1,10 @@
-pandas
-numpy
 python-dotenv
 click
+requests
+pandas
+numpy
 sqlalchemy
-psycopg2
+psycopg2-binary
 geopandas
 shapely
 geojson

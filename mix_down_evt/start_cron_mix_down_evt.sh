@@ -8,7 +8,7 @@ echo "=Horário do cron: ${CONTAINER_CRON_MIX_DOWN_EVT}"
 # 1️ Executa o script no início se CONTAINER_EXEC_NO_INICIO_MIX_DOWN_EVT for True
 if [ "${CONTAINER_EXEC_NO_INICIO_MIX_DOWN_EVT}" = "True" ] || [ "${CONTAINER_EXEC_NO_INICIO_MIX_DOWN_EVT}" = "true" ]; then
     echo "CONTAINER_EXEC_NO_INICIO_MIX_DOWN_EVT está ativo. Executando script imediatamente..."
-    bash /app/CONTAINER_EXEC_NO_INICIO_MIX_DOWN_EVT
+    bash /app/down_evt.sh
 else
     echo "CONTAINER_EXEC_NO_INICIO_MIX_DOWN_EVT não está ativo. O script será executado apenas pelo cron."
 fi

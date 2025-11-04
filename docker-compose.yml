@@ -16,6 +16,16 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
+
+  mix_down_motoristas:
+    build: ./mix_down_motoristas
+    container_name: mix_down_motoristas
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
+      
   ra_update_linhas_kml:
     build: ./ra_update_linhas_kml
     container_name: ra_update_linhas_kml

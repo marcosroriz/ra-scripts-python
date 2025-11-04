@@ -1,3 +1,4 @@
+requests
 pandas
 numpy
 python-dotenv
@@ -9,3 +10,4 @@ shapely
 geojson
 protobuf
 xlsxwriter
+unidecode

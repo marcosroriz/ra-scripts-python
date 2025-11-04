@@ -4,5 +4,5 @@
 for i in {0..4}
 do
   DATE=$(date -d "-$i day" +%Y-%m-%d)
-  /home/grupo_fctufg/anaconda3/envs/ra/bin/python -u /home/grupo_fctufg/down_tst_combs.py --data_baixar=$DATE >> /home/grupo_fctufg/logs/${DATE}-tst-combs.txt
+  python -u down_tst_combs.py --data_baixar=$DATE >> /home/grupo_fctufg/logs/${DATE}-tst-combs.txt
 done

@@ -79,6 +79,15 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
+
+  mix_down_tst_combs:
+    build: ./mix_down_tst_combs
+    container_name: mix_down_tst_combs
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
       
   ra_update_linhas_kml:
     build: ./ra_update_linhas_kml

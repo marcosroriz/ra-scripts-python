@@ -4,7 +4,7 @@ numpy
 python-dotenv
 click
 sqlalchemy
-psycopg2
+psycopg2-binary
 geopandas
 shapely
 geojson

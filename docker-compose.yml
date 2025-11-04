@@ -43,6 +43,33 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
+
+  mix_down_rel_evt_trip:
+    build: ./mix_down_rel_evt_trip
+    container_name: mix_down_rel_evt_trip
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
+
+  mix_down_rel_pos_trip:
+    build: ./mix_down_rel_pos_trip
+    container_name: mix_down_rel_pos_trip
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
+
+  mix_down_tipos_eventos:
+    build: ./mix_down_tipos_eventos
+    container_name: mix_down_tipos_eventos
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
       
   ra_update_linhas_kml:
     build: ./ra_update_linhas_kml

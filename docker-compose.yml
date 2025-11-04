@@ -1,6 +1,15 @@
 version: "3.9"
 
 services:
+  mix_down_evt:
+    build: ./mix_down_evt
+    container_name: mix_down_evt
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
+
   ra_update_linhas_kml:
     build: ./ra_update_linhas_kml
     container_name: ra_update_linhas_kml

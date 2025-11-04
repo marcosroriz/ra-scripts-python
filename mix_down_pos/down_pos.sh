@@ -2,12 +2,12 @@
 
 # Baixa o dado de hoje
 dia_hoje=$(date +%Y-%m-%d)
-/home/grupo_fctufg/anaconda3/envs/ra/bin/python -u /home/grupo_fctufg/down_pos.py --data_baixar=$dia_hoje >> /home/grupo_fctufg/logs/${dia_hoje}-pos.txt
+python -u down_pos.py --data_baixar=$dia_hoje >> /home/grupo_fctufg/logs/${dia_hoje}-pos.txt
 
 # Baixa o dado do dia anterior (-1)
 dia_anterior=$(date -d "-1 day" +%Y-%m-%d)
-/home/grupo_fctufg/anaconda3/envs/ra/bin/python -u /home/grupo_fctufg/down_pos.py --data_baixar=$dia_anterior >> /home/grupo_fctufg/logs/${dia_anterior}-pos-dia-anterior.txt
+python -u down_pos.py --data_baixar=$dia_anterior >> /home/grupo_fctufg/logs/${dia_anterior}-pos-dia-anterior.txt
 
 # Baixa o dado do dia anterior (-2)
 dia_anterior=$(date -d "-2 day" +%Y-%m-%d)
-/home/grupo_fctufg/anaconda3/envs/ra/bin/python -u /home/grupo_fctufg/down_pos.py --data_baixar=$dia_anterior >> /home/grupo_fctufg/logs/${dia_anterior}-pos-dia-anterior.txt
+python -u down_pos.py --data_baixar=$dia_anterior >> /home/grupo_fctufg/logs/${dia_anterior}-pos-dia-anterior.txt

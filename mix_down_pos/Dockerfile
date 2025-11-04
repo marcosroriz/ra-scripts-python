@@ -24,12 +24,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Dá permissão de execução para o script
-RUN chmod +x /app/down_pecas.sh
+RUN chmod +x /app/down_pos.sh
 
-RUN chmod +x /app/start_cron_mix_down_pecas.sh
+RUN chmod +x /app/start_cron_mix_down_pos.sh
 
 # Cria diretórios de logs
 RUN mkdir -p /home/grupo_fctufg/logs/
 
 # Comando final
-CMD ["/app/start_cron_mix_down_pecas.sh"]
+CMD ["/app/start_cron_mix_down_pos.sh"]

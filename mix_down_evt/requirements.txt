@@ -1,7 +1,8 @@
-pandas
-numpy
 python-dotenv
 click
+requests
+pandas
+numpy
 sqlalchemy
 psycopg2-binary
 geopandas

@@ -11,3 +11,4 @@ geojson
 protobuf
 xlsxwriter
 unidecode
+tqdm

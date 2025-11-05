@@ -88,6 +88,15 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
+
+  mix_update_veiculos:
+    build: ./mix_update_veiculos
+    container_name: mix_update_veiculos
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
       
   ra_update_linhas_kml:
     build: ./ra_update_linhas_kml

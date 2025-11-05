@@ -121,6 +121,7 @@ def decodifica_kml(kml_linha_raw):
             # Encontrar o primeiro arquivo .kml
             kml_filename = next(name for name in zf.namelist() if name.endswith(".kml"))
             with zf.open(kml_filename) as kml_file:
+                # kml_content = kml_file.read().decode("utf-8")
                 kml_content = kml_file.read()
     except Exception as e:
         print(f"Erro ao processar arquivo KMZ: {e}")

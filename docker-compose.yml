@@ -97,7 +97,16 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
-      
+     
+  monitoramento_regra_os:
+    build: ./monitoramento_regra_os
+    container_name: monitoramento_regra_os
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
+
   ra_update_linhas_kml:
     build: ./ra_update_linhas_kml
     container_name: ra_update_linhas_kml

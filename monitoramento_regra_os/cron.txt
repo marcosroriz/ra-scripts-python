@@ -1,0 +1,1 @@
+*/15 * * * *  /home/grupo_fctufg/scripts_python/monitoramento_regra/monitoramento_job.sh

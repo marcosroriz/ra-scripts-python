@@ -152,6 +152,8 @@ def verifica_erro_wpp(wpp_telefone):
         r"^\d{2}\d{4}-\d{4}$",  # 629999-9999
         r"^\d{10}$",  # 6299999999 (fixo)
         r"^\d{11}$",  # 62999999999 (celular)
+        r"-group$",   # grupo do whatsapp
+        r"\d{12}-\d{10}" # grupo do whatsapp (outro formato)
     ]
 
     if not any(re.match(padrao, wpp_limpo) for padrao in padroes_validos):
@@ -195,14 +197,27 @@ def main():
     os_download_service = OSDownload(RA_API_URL, RA_API_KEY)
     df_os_api = os_download_service.download_os(data_inicio_str, data_fim_str)
 
-    # Obtem as novas OSs
+    # Serviço para gerenciar as OSs
     os_manager_service = OSManager(pg_engine)
+    
+    # Obtem as novas OSs
     df_os_novas = os_manager_service.get_os_novas(df_os_api)
+
+    # Obtém as OS que atualizaram colaborador (antes não tinham, i.e., COLABORADOR QUE EXECUTOU O SERVICO = 0)
+    df_os_atualizadas = os_manager_service.get_os_atualizadas_com_colaborador(df_os_api)
 
     # Obtem as OS que fecharam agora (não tinham data de fechamento prévia)
     # Como o sistema permite que OS sejam criadas sem colaboradores, é necessário atualizar as OS com as informações
     # posteriores para que se verifique a questão do retrabalho
     df_os_fecharam_agora = os_manager_service.get_os_fecharam_agora(df_os_api)
+
+    # Vamos processar as OS atualizadas com colaborador
+    if not df_os_atualizadas.empty:
+        # Faz o update do colaborador nas OS que atualizaram colaborador
+        os_manager_service.atualizar_os(df_os_atualizadas)
+        print(len(df_os_atualizadas), "OS ATUALIZADAS")
+    else:
+        print("SEM OS PARA ATUALIZAR")
 
     # Se não houver novas OS, encerra o script
     if df_os_novas.empty:

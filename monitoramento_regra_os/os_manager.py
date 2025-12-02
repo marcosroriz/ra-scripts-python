@@ -8,7 +8,7 @@ import pandas as pd
 
 # Banco de Dados
 import sqlalchemy
-from sqlalchemy import update
+from sqlalchemy import update, delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import text
 
@@ -31,6 +31,20 @@ class OSManager(object):
         df_os_abertas = pd.read_sql_query(query, self.db_engine)
         return df_os_abertas
 
+    def __get_os_abertas_sem_colaborador(self, ultima_qtd_dias=30):
+        query = f"""
+        SELECT
+            *
+        FROM
+            os_dados 
+        WHERE
+            "DATA DA ABERTURA DA OS"::timestamp BETWEEN CURRENT_DATE - INTERVAL '{ultima_qtd_dias} days' AND CURRENT_DATE + INTERVAL '5 days'
+            AND "COLABORADOR QUE EXECUTOU O SERVICO" = 0
+        """
+
+        df_os_abertas_sem_colaborador = pd.read_sql_query(query, self.db_engine)
+        return df_os_abertas_sem_colaborador
+
     def get_os_novas(self, df_os_api):
         # Pega as OS abertas nos últimos 30 dias na base de dados (que foram salvas já!)
         # Vamos comparar com as os que baixamos da API (df_os)
@@ -40,6 +54,19 @@ class OSManager(object):
         df_os_novas = df_os_api[~df_os_api["NUMERO DA OS"].isin(df_os_banco["NUMERO DA OS"])]
 
         return df_os_novas
+
+    def get_os_atualizadas_com_colaborador(self, df_os_api):
+        # Pega as OS abertas sem colaborador na base de dados (que foram salvas já!)
+        # Vamos comparar com as os que baixamos da API (df_os)
+        df_os_banco_sem_colaborador = self.__get_os_abertas_sem_colaborador(ultima_qtd_dias=30)
+
+        # Filtra as OS que estão na base de dados e que agora possuem colaborador
+        df_os_novas_sem_colaborador = df_os_api[
+            (df_os_api["NUMERO DA OS"].isin(df_os_banco_sem_colaborador["NUMERO DA OS"]))
+            & (df_os_api["COLABORADOR QUE EXECUTOU O SERVICO"] != 0)
+        ]
+
+        return df_os_novas_sem_colaborador
 
     def get_os_fecharam_agora(self, df_os_api):
         # Pega as OS abertas nos últimos 30 dias na base de dados (que foram salvas já!)
@@ -82,6 +109,20 @@ class OSManager(object):
                     )
                 )
                 conn.execute(stmt)
+
+    def atualizar_os(self, df_os_atualizadas):
+        table = sqlalchemy.Table("os_dados", sqlalchemy.MetaData(), autoload_with=self.db_engine)
+
+        os_list = df_os_atualizadas.to_dict(orient="records")
+
+        # Para cada os que teve atualização
+        for os_dict in os_list:
+            delete_stmt = delete(table).where(table.c["NUMERO DA OS"] == os_dict["NUMERO DA OS"])
+            insert_nova_os_stmt = insert(table).values(os_dict).on_conflict_do_nothing(index_elements=["KEY_HASH"])
+
+            with self.db_engine.begin() as conn:
+                conn.execute(delete_stmt)
+                conn.execute(insert_nova_os_stmt)
 
     def fecha_os_com_data_nulas(self, df_os_fecharam_agora):
         table = sqlalchemy.Table("os_dados", sqlalchemy.MetaData(), autoload_with=self.db_engine)

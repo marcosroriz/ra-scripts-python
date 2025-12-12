@@ -1,4 +1,13 @@
 services:
+  analise_combustivel_mix:
+    build: ./analise_combustivel_mix
+    container_name: analise_combustivel_mix
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
+
   mix_down_evt:
     build: ./mix_down_evt
     container_name: mix_down_evt

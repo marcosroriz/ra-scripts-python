@@ -13,3 +13,4 @@ xlsxwriter
 geojson-length
 fastkml
 lxml
+holidays

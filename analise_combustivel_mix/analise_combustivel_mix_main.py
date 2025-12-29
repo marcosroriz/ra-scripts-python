@@ -65,7 +65,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def run_script(data_str, asset_id, timeout=900):
     cmd = [
-        "/home/grupo_fctufg/anaconda3/envs/ra/bin/python",
+        "python",
         os.path.join(CURRENT_PATH, "analise_combustivel_mix_subprocess.py"),
         f"--data_baixar={data_str}",
         f"--vec_asset_id={asset_id}",

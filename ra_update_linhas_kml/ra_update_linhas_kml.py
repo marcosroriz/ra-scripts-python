@@ -21,6 +21,7 @@ import pandas as pd
 # BD
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
+from execution_logger import ExecutionLogger
 
 # Base64 para GeoJSON
 import base64
@@ -261,17 +262,5 @@ def main(engine_pg):
 ###################################################################################
 
 if __name__ == "__main__":
-    # Marca o início da execução
-    start_time = dt.datetime.now()
-
-    try:
-        # Executa o script principal
+    with ExecutionLogger(pg_engine, "ra_update_linhas_kml"):
         main(engine_pg=pg_engine)
-    except Exception as e:
-        print(f"Erro ao executar o script: {e}")
-
-    # Calcula o tempo total de execução
-    end_time = dt.datetime.now()
-    minutes = (end_time - start_time).seconds // 60
-
-    print(f"Tempo para executar o script (em minutos): {minutes}")

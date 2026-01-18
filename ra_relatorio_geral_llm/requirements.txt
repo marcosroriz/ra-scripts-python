@@ -1,0 +1,12 @@
+pandas
+numpy
+python-dotenv
+click
+sqlalchemy
+psycopg2
+geopandas
+shapely
+geojson
+protobuf
+xlsxwriter
+unidecode

@@ -8,6 +8,8 @@
 import datetime as dt
 import os
 import psycopg2 as pg
+from sqlalchemy import create_engine
+from execution_logger import ExecutionLogger
 
 # DotEnv
 from dotenv import load_dotenv
@@ -91,15 +93,12 @@ def main(engine_pg):
 ###################################################################################
 
 if __name__ == "__main__":
-    start_time = dt.datetime.now()
-
-    try:
-        main(engine_pg=pg_engine)
-    except Exception as e:
-        print(f"Erro ao executar o script: {e}")
-    finally:
-        pg_engine.close()
-
-    end_time = dt.datetime.now()
-    minutes = (end_time - start_time).seconds // 60
-    print(f"Tempo para executar o script (em minutos): {minutes}")
+    # Cria engine para o logger
+    engine_logger = create_engine(
+        f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}"
+    )
+    with ExecutionLogger(engine_logger, "mix_down_rel_pos_trip"):
+        try:
+            main(engine_pg=pg_engine)
+        finally:
+            pg_engine.close()

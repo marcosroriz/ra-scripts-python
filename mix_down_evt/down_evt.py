@@ -31,6 +31,7 @@ import requests
 from sqlalchemy import create_engine
 from sqlalchemy import Table, MetaData
 from sqlalchemy.dialects.postgresql import insert
+from execution_logger import ExecutionLogger
 
 # DotEnv
 from dotenv import load_dotenv
@@ -327,16 +328,6 @@ def main(data_baixar):
 
 
 if __name__ == "__main__":
-    # Salva tempo de inicio
-    start = dt.datetime.now()
-
-    # Executa
-    main()
-
-    # Salva tempo de fim
-    end = dt.datetime.now()
-
-    # Obtem o tempo total em minutos
-    tempo_minutos = (end - start).seconds // 60
-
-    print("Tempo para executar o script (em minutos)", tempo_minutos)
+    # Executa com Logger
+    with ExecutionLogger(pg_engine, "mix_down_evt"):
+        main()

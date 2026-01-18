@@ -30,6 +30,7 @@ import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import text
+from execution_logger import ExecutionLogger
 
 # DotEnv
 from dotenv import load_dotenv
@@ -184,13 +185,5 @@ def main(engine_pg):
 ###################################################################################
 
 if __name__ == "__main__":
-    start_time = dt.datetime.now()
-
-    try:
+    with ExecutionLogger(pg_engine, "mix_down_pecas"):
         main(engine_pg=pg_engine)
-    except Exception as e:
-        print(f"Erro ao executar o script: {e}")
-
-    end_time = dt.datetime.now()
-    minutes = (end_time - start_time).seconds // 60
-    print(f"Tempo para executar o script (em minutos): {minutes}")

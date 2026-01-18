@@ -42,7 +42,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import text
 from sqlalchemy.exc import OperationalError
-from execution_logger import ExecutionLogger
 
 ###################################################################################
 # Configurações
@@ -418,129 +417,120 @@ def processar_correcao(complemento):
 # Vamos processar dado de mês em mês
 ###################################################################################
 
-def main():
-    # Data de hoje (threshold)
-    data_hoje = pd.to_datetime("now")
+# Data de hoje (threshold)
+data_hoje = pd.to_datetime("now")
 
-    # Data de início e fim do intervalo
-    data_intervalo_inicio = pd.to_datetime("2025-01-01")
+# Data de início e fim do intervalo
+data_intervalo_inicio = pd.to_datetime("2025-01-01")
+data_intervalo_fim = data_intervalo_inicio + pd.DateOffset(months=1)
+
+while data_intervalo_inicio < data_hoje:
+    data_inicio_str = data_intervalo_inicio.strftime("%Y-%m-%d")
+    data_fim_str = data_intervalo_fim.strftime("%Y-%m-%d")
+
+    # Ler os dados
+    query = r"""
+        SELECT 
+            od."KEY_HASH",
+            od."NUMERO DA OS",
+            od."FILIAL",
+            od."DESCRICAO DO SERVICO",
+            od."COMPLEMENTO DO SERVICO"
+        FROM 
+            os_dados od 
+        WHERE 
+            od."DATA INICIO SERVIÇO" IS NOT NULL 
+            AND od."DATA INICIO SERVIÇO" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'::text 
+            AND od."DATA DE FECHAMENTO DO SERVICO" IS NOT NULL 
+            AND od."DATA DE FECHAMENTO DO SERVICO" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'::text 
+            -- AND od."DESCRICAO DO TIPO DA OS" = 'OFICINA'::text
+            AND (od."PRIORIDADE SERVICO" = ANY (ARRAY['Vermelho'::text, 'Amarelo'::text, 'Verde'::text]))
+            AND od."DESCRICAO DA SECAO" in ('MANUTENCAO ELETRICA', 'MANUTENCAO MECANICA') 
+            AND od."COMPLEMENTO DO SERVICO" LIKE '%%Totem%%'
+    """
+
+    query += f"""
+        AND od."DATA INICIO SERVIÇO" >= '{data_inicio_str}' AND od."DATA INICIO SERVIÇO" < '{data_fim_str}'
+    """
+
+    df = pd.read_sql_query(query, pg_engine)
+
+    # Processar os dados
+    df["COMPLEMENTO DO SERVICO"] = df["COMPLEMENTO DO SERVICO"].apply(formatar_texto)
+    df["UFG_SINTOMA"] = df["COMPLEMENTO DO SERVICO"].apply(processar_sintoma)
+    df["UFG_CORRECAO"] = df["COMPLEMENTO DO SERVICO"].apply(processar_correcao)
+
+    # Processando os dados
+    tam_df = len(df)
+    os_atual = 1
+    num_errors = 0
+
+    # Iterar sobre as linhas do dataframe
+    for index, row in df.iterrows():
+        print(
+            f"Processando OS {os_atual} de {tam_df} do intervalo {data_inicio_str} a {data_fim_str}, erros: {num_errors}"
+        )
+        os_atual += 1
+
+        key = row["KEY_HASH"]
+        num_os = row["NUMERO DA OS"]
+        problem = row["DESCRICAO DO SERVICO"]
+        text_symptoms = row["UFG_SINTOMA"]
+        text_mechanic = row["UFG_CORRECAO"]
+
+        # Vamos verifica se a OS já não foi processada
+        query = f"""
+            SELECT "KEY_HASH"
+            FROM 
+                os_dados_classificacao 
+            WHERE 
+                "KEY_HASH" = '{key}'
+        """
+
+        df_os_classificada = None
+        try:
+            with pg_engine.connect() as conn:
+                df_os_classificada = pd.read_sql_query(query, conn)
+        except OperationalError as e:
+            print(f"Erro de conexão detectado: {e}")
+            num_errors += 1
+
+        # Houve erro de conexão, vamos recriar a conexão
+        if df_os_classificada is None:
+            pg_engine = recriar_pg_engine()
+            num_errors += 1
+            continue
+
+        # Vamos ver se a OS já foi processada
+        if df_os_classificada.empty:
+            print(f"OS: {num_os}", problem, text_symptoms, text_mechanic, key)
+            try:
+                # Classifica a OS
+                result = openai_client.classify_mechanic_service(problem, text_symptoms, text_mechanic)
+                result["KEY_HASH"] = key
+                result["SINTOMA"] = text_symptoms
+                result["CORRECAO"] = text_mechanic
+
+                df_os_dado = pd.DataFrame([result])
+                df_os_dado = df_os_dado.replace({"YES": True, "NO": False})
+                df_os_dado["DATA_ANALISE"] = pd.to_datetime("now").strftime("%Y-%m-%d %H:%M:%S")
+
+                # Vamos inserir os dados no banco de dados
+                df_os_dado.to_sql("os_dados_classificacao", pg_engine, if_exists="append", index=False)
+                print("--> Dado inserido com sucesso 'os_dados_classificacao'.")
+            except Exception as ex:
+                print(f"Houve um erro: {ex}")
+                num_errors += 1
+        else:
+            print("--> OS já foi processada", key)
+            continue
+
+        # Aguardar um tempo para não sobrecarregar a API
+        time.sleep(5)
+
+    # Vamos para o próximo mês
+    data_intervalo_inicio = data_intervalo_fim
     data_intervalo_fim = data_intervalo_inicio + pd.DateOffset(months=1)
 
-    # Use global pg_engine or pass it. It is global.
-    global pg_engine
 
-    while data_intervalo_inicio < data_hoje:
-        data_inicio_str = data_intervalo_inicio.strftime("%Y-%m-%d")
-        data_fim_str = data_intervalo_fim.strftime("%Y-%m-%d")
-
-        # Ler os dados
-        query = r"""
-            SELECT 
-                od."KEY_HASH",
-                od."NUMERO DA OS",
-                od."FILIAL",
-                od."DESCRICAO DO SERVICO",
-                od."COMPLEMENTO DO SERVICO"
-            FROM 
-                os_dados od 
-            WHERE 
-                od."DATA INICIO SERVIÇO" IS NOT NULL 
-                AND od."DATA INICIO SERVIÇO" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'::text 
-                AND od."DATA DE FECHAMENTO DO SERVICO" IS NOT NULL 
-                AND od."DATA DE FECHAMENTO DO SERVICO" ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'::text 
-                -- AND od."DESCRICAO DO TIPO DA OS" = 'OFICINA'::text
-                AND (od."PRIORIDADE SERVICO" = ANY (ARRAY['Vermelho'::text, 'Amarelo'::text, 'Verde'::text]))
-                AND od."DESCRICAO DA SECAO" in ('MANUTENCAO ELETRICA', 'MANUTENCAO MECANICA') 
-                AND od."COMPLEMENTO DO SERVICO" LIKE '%%Totem%%'
-        """
-
-        query += f"""
-            AND od."DATA INICIO SERVIÇO" >= '{data_inicio_str}' AND od."DATA INICIO SERVIÇO" < '{data_fim_str}'
-        """
-
-        df = pd.read_sql_query(query, pg_engine)
-
-        # Processar os dados
-        df["COMPLEMENTO DO SERVICO"] = df["COMPLEMENTO DO SERVICO"].apply(formatar_texto)
-        df["UFG_SINTOMA"] = df["COMPLEMENTO DO SERVICO"].apply(processar_sintoma)
-        df["UFG_CORRECAO"] = df["COMPLEMENTO DO SERVICO"].apply(processar_correcao)
-
-        # Processando os dados
-        tam_df = len(df)
-        os_atual = 1
-        num_errors = 0
-
-        # Iterar sobre as linhas do dataframe
-        for index, row in df.iterrows():
-            print(
-                f"Processando OS {os_atual} de {tam_df} do intervalo {data_inicio_str} a {data_fim_str}, erros: {num_errors}"
-            )
-            os_atual += 1
-
-            key = row["KEY_HASH"]
-            num_os = row["NUMERO DA OS"]
-            problem = row["DESCRICAO DO SERVICO"]
-            text_symptoms = row["UFG_SINTOMA"]
-            text_mechanic = row["UFG_CORRECAO"]
-
-            # Vamos verifica se a OS já não foi processada
-            query = f"""
-                SELECT "KEY_HASH"
-                FROM 
-                    os_dados_classificacao 
-                WHERE 
-                    "KEY_HASH" = '{key}'
-            """
-
-            df_os_classificada = None
-            try:
-                with pg_engine.connect() as conn:
-                    df_os_classificada = pd.read_sql_query(query, conn)
-            except OperationalError as e:
-                print(f"Erro de conexão detectado: {e}")
-                num_errors += 1
-
-            # Houve erro de conexão, vamos recriar a conexão
-            if df_os_classificada is None:
-                pg_engine = recriar_pg_engine()
-                num_errors += 1
-                continue
-
-            # Vamos ver se a OS já foi processada
-            if df_os_classificada.empty:
-                print(f"OS: {num_os}", problem, text_symptoms, text_mechanic, key)
-                try:
-                    # Classifica a OS
-                    result = openai_client.classify_mechanic_service(problem, text_symptoms, text_mechanic)
-                    result["KEY_HASH"] = key
-                    result["SINTOMA"] = text_symptoms
-                    result["CORRECAO"] = text_mechanic
-
-                    df_os_dado = pd.DataFrame([result])
-                    df_os_dado = df_os_dado.replace({"YES": True, "NO": False})
-                    df_os_dado["DATA_ANALISE"] = pd.to_datetime("now").strftime("%Y-%m-%d %H:%M:%S")
-
-                    # Vamos inserir os dados no banco de dados
-                    df_os_dado.to_sql("os_dados_classificacao", pg_engine, if_exists="append", index=False)
-                    print("--> Dado inserido com sucesso 'os_dados_classificacao'.")
-                except Exception as ex:
-                    print(f"Houve um erro: {ex}")
-                    num_errors += 1
-            else:
-                print("--> OS já foi processada", key)
-                continue
-
-            # Aguardar um tempo para não sobrecarregar a API
-            time.sleep(5)
-
-        # Vamos para o próximo mês
-        data_intervalo_inicio = data_intervalo_fim
-        data_intervalo_fim = data_intervalo_inicio + pd.DateOffset(months=1)
-
-
-    print("Finalização do processamento")
-
-
-if __name__ == "__main__":
-    with ExecutionLogger(pg_engine, "mix_down_llm"):
-        main()
+print("Finalização do processamento")

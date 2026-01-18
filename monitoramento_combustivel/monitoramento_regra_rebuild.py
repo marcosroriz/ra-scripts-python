@@ -25,13 +25,13 @@ load_dotenv("../.env")
 import os
 import sys
 import re
+import pandas as pd
 
 # Datas
 import datetime as dt
 
 # BD
 from sqlalchemy import create_engine
-from execution_logger import ExecutionLogger
 
 # Imports OS
 from os_download import OSDownload
@@ -153,8 +153,8 @@ def verifica_erro_wpp(wpp_telefone):
         r"^\d{2}\d{4}-\d{4}$",  # 629999-9999
         r"^\d{10}$",  # 6299999999 (fixo)
         r"^\d{11}$",  # 62999999999 (celular)
-        r"-group$",   # grupo do whatsapp
-        r"\d{12}-\d{10}" # grupo do whatsapp (outro formato)
+        r"-group$",  # grupo do whatsapp
+        r"\d{12}-\d{10}",  # grupo do whatsapp (outro formato)
     ]
 
     if not any(re.match(padrao, wpp_limpo) for padrao in padroes_validos):
@@ -187,85 +187,69 @@ def envia_wpp(wpp_service, regra_dados_dict, os_dados_dict):
 
 def main():
     # Define datas do script
-    data_atual = dt.datetime.now()
-    data_inicio = data_atual - dt.timedelta(days=7)
-    data_fim = data_atual + dt.timedelta(days=1)
+    data_atual = pd.to_datetime("2025-10-01")
+    data_inicio = pd.to_datetime("2025-10-01")
+    data_fim = dt.datetime.now() + dt.timedelta(days=1)
 
-    data_inicio_str = data_inicio.strftime("%d/%m/%Y")
-    data_fim_str = data_fim.strftime("%d/%m/%Y")
+    # Percorre o intervalo
+    while data_atual <= data_fim:
+        inicio = data_atual
+        fim = data_atual + dt.timedelta(days=7)
 
-    # Faz o download das OSs
-    os_download_service = OSDownload(RA_API_URL, RA_API_KEY)
-    df_os_api = os_download_service.download_os(data_inicio_str, data_fim_str)
+        # Gera as strings
+        data_inicio_str = inicio.strftime("%d/%m/%Y")
+        data_fim_str = fim.strftime("%d/%m/%Y")
 
-    # Serviço para gerenciar as OSs
-    os_manager_service = OSManager(pg_engine)
-    
-    # Obtem as novas OSs
-    df_os_novas = os_manager_service.get_os_novas(df_os_api)
+        print("Processando de", data_inicio_str, " até ", data_fim_str)
+        # Faz o download das OSs
+        os_download_service = OSDownload(RA_API_URL, RA_API_KEY)
+        df_os_api = os_download_service.download_os(data_inicio_str, data_fim_str)
 
-    # Obtém as OS que atualizaram colaborador (antes não tinham, i.e., COLABORADOR QUE EXECUTOU O SERVICO = 0)
-    df_os_atualizadas = os_manager_service.get_os_atualizadas_com_colaborador(df_os_api)
+        # Obtem as novas OSs
+        os_manager_service = OSManager(pg_engine)
 
-    # Obtem as OS que fecharam agora (não tinham data de fechamento prévia)
-    # Como o sistema permite que OS sejam criadas sem colaboradores, é necessário atualizar as OS com as informações
-    # posteriores para que se verifique a questão do retrabalho
-    df_os_fecharam_agora = os_manager_service.get_os_fecharam_agora(df_os_api)
+        # DF novas
+        df_os_novas = os_manager_service.get_os_novas(
+            df_os_api, data_inicio=inicio.strftime("%Y-%m-%d"), data_fim=(fim + dt.timedelta(days=1)).strftime("%Y-%m-%d")
+        )
 
-    # Vamos processar as OS atualizadas com colaborador
-    if not df_os_atualizadas.empty:
-        # Faz o update do colaborador nas OS que atualizaram colaborador
-        os_manager_service.atualizar_os(df_os_atualizadas)
-        print(len(df_os_atualizadas), "OS ATUALIZADAS")
-    else:
-        print("SEM OS PARA ATUALIZAR")
+        # Obtém as OS que atualizaram colaborador (antes não tinham, i.e., COLABORADOR QUE EXECUTOU O SERVICO = 0)
+        df_os_atualizadas = os_manager_service.get_os_atualizadas_com_colaborador(
+            df_os_api, data_inicio=inicio.strftime("%Y-%m-%d"), data_fim=(fim + dt.timedelta(days=1)).strftime("%Y-%m-%d")
+        )
 
-    # Se não houver novas OS, encerra o script
-    if df_os_novas.empty:
-        print("Nenhuma nova OS encontrada. Encerrando o script.")
-        return
-    else:
-        print(f"Total de novas OSs: {len(df_os_novas)}.")
-
-    # Faz o insert das novas OSs na base de dados
-    os_manager_service.insert_os_novas(df_os_novas)
-
-    # Atualiza a data de fechamento da OS que foram abertas de forma padrão (COLABORADOR = 0) e que foram fechadas
-    os_manager_service.fecha_os_com_data_nulas(df_os_fecharam_agora)
-
-    # Refresh das views
-    os_manager_service.refresh_views()
-
-    # Obtem todas as regras de monitoramento
-    rule_manager_service = RuleManager(pg_engine)
-    regras = rule_manager_service.get_all_rules()
-
-    # Para cada regra, verifica se alguma nova OS se encaixa na regra
-    for r in regras:
-        regra_dados_dict = r.get_dados_regra()
-        nome_regra = regra_dados_dict["nome_regra"]
-        df_novas_os_regra = r.get_novas_os_filtradas_pela_regra()
-
-        if df_novas_os_regra.empty:
-            print(f"{nome_regra} não possui novas OS")
+        # Vamos processar as novas OS
+        if not df_os_novas.empty:
+            os_manager_service.insert_os_novas(df_os_novas)
+            print(len(df_os_novas), "NOVAS OS INSERIDAS")
         else:
-            print(f"{nome_regra} detectou {len(df_novas_os_regra)} OSs")
-            
-            # Salva os dados da regra
-            r.salvar_dados_regra(df_novas_os_regra)
-            print(f"SALVOU {len(df_novas_os_regra)} OSs na regra {nome_regra}")
+            print("SEM NOVAS OS")
 
-            # Dispara WhatsApp se aplicável
-            if regra_dados_dict["wpp_ativo"]:
-                for _, os_dados_dict in df_novas_os_regra.iterrows():
-                    envia_wpp(wpp_service, regra_dados_dict, os_dados_dict)
+        # Vamos processar as OS atualizadas com colaborador
+        if not df_os_atualizadas.empty:
+            # Faz o update do colaborador nas OS que atualizaram colaborador
+            os_manager_service.atualizar_os(df_os_atualizadas)
+            print(len(df_os_atualizadas), "OS ATUALIZADAS")
+        else:
+            print("SEM OS PARA ATUALIZAR")
 
-            # # Dispara E-mail se aplicável
-            if regra_dados_dict["email_ativo"]:
-                for _, os_dados_dict in df_novas_os_regra.iterrows():
-                    envia_email(email_service, regra_dados_dict, os_dados_dict)
+        # Refresh das views
+        os_manager_service.refresh_views()
+
+        # Incrementa data_atual
+        data_atual = fim
 
 
 if __name__ == "__main__":
-    with ExecutionLogger(pg_engine, "monitoramento_regra_os"):
+    # Mede o tempo de execução
+    data_inicio_script = dt.datetime.now()
+    print("Script iniciado em: ", data_inicio_script)
+
+    try:
         main()
+    except Exception as e:
+        print(f"Erro ao executar o script: {e}")
+
+    data_fim_script = dt.datetime.now()
+    tempo_script_minutos = (data_fim_script - data_inicio_script).seconds // 60
+    print(f"Tempo para executar o script (em minutos): {tempo_script_minutos}")

@@ -53,6 +53,7 @@ load_dotenv(os.path.join(CURRENT_PATH, "..", ".env"))
 
 # Banco de Dados
 from db import PostgresSingleton
+from execution_logger import ExecutionLogger
 
 # Thread Pool
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -124,16 +125,9 @@ def main(data_baixar):
 
 
 if __name__ == "__main__":
-    # Salva tempo de inicio
-    start = dt.datetime.now()
+    # Obtem engine para logger
+    pgDB_logger = PostgresSingleton.get_instance()
+    engine_logger = pgDB_logger.get_engine()
 
-    # Executa
-    main()
-
-    # Salva tempo de fim
-    end = dt.datetime.now()
-
-    # Obtem o tempo total em minutos
-    tempo_minutos = (end - start).seconds // 60
-
-    print("Tempo para executar o script (em minutos)", tempo_minutos)
+    with ExecutionLogger(engine_logger, "analise_combustivel_mix"):
+        main()

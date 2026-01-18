@@ -14,6 +14,7 @@ import datetime as dt
 
 # BD
 from sqlalchemy import create_engine
+from execution_logger import ExecutionLogger
 
 # Requests
 import requests
@@ -130,7 +131,8 @@ def get_veiculos_db():
 
 
 if __name__ == "__main__":
-    authenticate()
+    with ExecutionLogger(pg_engine, "mix_update_veiculos"):
+        authenticate()
 
     df_veiculos_api = get_veiculos_api()
     df_veiculos_db = get_veiculos_db()

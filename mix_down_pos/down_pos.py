@@ -146,7 +146,7 @@ def main(data_baixar):
     resp = requests.request("GET", url, headers=AUTH_HEADERS, data={})
     df_veiculos = pd.json_normalize(resp.json())
 
-    batch_size = 10
+    batch_size = 20
     n_batches = (df_veiculos.shape[0] // batch_size) + 1
     erros = []
 
@@ -203,7 +203,17 @@ def main(data_baixar):
                 ].copy()
                 df_evt.columns = df_evt.columns.str.replace(".", "_")
 
-                df_filtered = df_evt
+                # Remove those that do not have valid Longitude and Latitude
+                df_evt = df_evt[
+                    (df_evt["Longitude"].notna())
+                    & (df_evt["Latitude"].notna())
+                    & (df_evt["Longitude"] != 0)
+                    & (df_evt["Latitude"] != 0)
+                ]
+
+                # Fill na
+                df_evt = df_evt.fillna({"OdometerKilometres": 0, "SpeedKilometresPerHour": 0})
+
                 # Remove colunas que não existem na tabela se tbl_existing_columns não for vazio
                 if tbl_existing_columns:
                     # Filter existing_columns to include only columns that are actually in df_evt

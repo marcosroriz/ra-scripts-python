@@ -37,7 +37,7 @@ class OpenAIChatGPTClient:
         else:
             raise Exception(f"Error {response.status_code}: {response.text}")
 
-    def gerar_relatorio_os(self, system_instructions, user_input):
+    def classificar_resposta(self, system_instructions, user_input):
         response = self.send_message(system_instructions, user_input)
 
         # Parse the response as JSON

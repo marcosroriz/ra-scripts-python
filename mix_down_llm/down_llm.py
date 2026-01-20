@@ -483,7 +483,7 @@ def main():
                     # Prepara user_input
                     user_input = prepara_user_input_llm(problem, text_symptoms, text_mechanic)
                     # Classifica a OS
-                    result = openai_client.send_message(system_instructions, user_input)
+                    result = openai_client.classificar_resposta(system_instructions, user_input)
                     result["KEY_HASH"] = key
                     result["SINTOMA"] = text_symptoms
                     result["CORRECAO"] = text_mechanic

@@ -232,6 +232,26 @@ def main(data_baixar):
                     tbl_filtered_columns = [col for col in tbl_existing_columns if col in df_evt.columns]
                     df_filtered = df_evt[tbl_filtered_columns]
 
+                # Lida com nans
+                # Timestamp columns
+                timestamp_cols = [
+                    "TripStart",
+                    "TripEnd",
+                ]
+                timestamp_cols = [c for c in timestamp_cols if c in df_filtered.columns]
+
+                # Remove rows with NULL timestamps
+                df_filtered = df_filtered.dropna(subset=timestamp_cols)
+
+                # Numeric columns -> fill NaN with 0
+                numeric_cols = df_filtered.select_dtypes(include=["number"]).columns
+                df_filtered[numeric_cols] = df_filtered[numeric_cols].fillna(0)
+
+                # Ensure PK integrity
+                pk_cols = ["DriverId", "AssetId", "TripId"]
+                pk_cols = [c for c in pk_cols if c in df_filtered.columns]
+                df_filtered = df_filtered.dropna(subset=pk_cols)
+
                 # Salva no banco
                 pg_engine.dispose()
                 with pg_engine.begin() as conn:

@@ -133,3 +133,12 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
+
+  relatorio_llm_os:
+    build: ./relatorio_llm_os
+    container_name: relatorio_llm_os
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/

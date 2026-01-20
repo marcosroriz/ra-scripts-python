@@ -44,6 +44,9 @@ from sqlalchemy.sql import text
 from sqlalchemy.exc import OperationalError
 from execution_logger import ExecutionLogger
 
+# OpenAI
+from openai import OpenAIChatGPTClient
+
 ###################################################################################
 # Configurações
 ###################################################################################
@@ -72,6 +75,9 @@ def recriar_pg_engine():
 OPEN_AI_KEY = os.getenv("OPENAI_API_KEY")
 OPEN_AI_MODEL = os.getenv("OPENAI_API_MODEL")
 OPEN_AI_URL = os.getenv("OPENAI_API_URL")
+
+# Cliente OpenAI
+openai_client = OpenAIChatGPTClient(key=OPEN_AI_KEY, model=OPEN_AI_MODEL, url=OPEN_AI_URL)
 
 # Mensagem de instruções para a LLM
 system_instructions = """
@@ -332,52 +338,6 @@ Output 8:
 """
 
 
-class OpenAIChatGPTClient:
-    def __init__(self, model="gpt-4o-mini"):
-        self.api_key = OPEN_AI_KEY
-        self.model = model
-        self.base_url = OPEN_AI_URL
-        self.headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
-
-    def send_message(self, messages):
-        payload = {"model": self.model, "messages": messages}
-        response = requests.post(self.base_url, headers=self.headers, json=payload)
-
-        if response.status_code == 200:
-            return response.json()["choices"][0]["message"]["content"]
-        else:
-            raise Exception(f"Error {response.status_code}: {response.text}")
-
-    def classify_mechanic_service(self, problem, text_symptoms, text_mechanic):
-        # System message with the detailed classification instructions
-        global system_instructions
-
-        # User input message with the specific order details
-        user_input = f"""
-        PROBLEM: {problem}
-        TEXT_SYMPTOMS: {text_symptoms}
-        TEXT_MECHANIC: {text_mechanic}
-        Please output the JSON as instructed. Output the raw json, do not include ```json``` in the message.
-        """
-
-        messages = [{"role": "system", "content": system_instructions}, {"role": "user", "content": user_input}]
-
-        response = self.send_message(messages)
-
-        # Parse the response as JSON
-        try:
-            json_output = json.loads(response)
-        except json.JSONDecodeError:
-            print("Failed to parse the response as JSON.")
-            print(response)
-            raise ValueError("Failed to parse the response as JSON.")
-
-        return json_output
-
-
-openai_client = OpenAIChatGPTClient(model=OPEN_AI_MODEL)
-
-
 ###################################################################################
 # Converter texto para maiúsculas, remover acentuação e caracteres especiais
 # Também pega sintomas e correcoes
@@ -412,6 +372,16 @@ def processar_correcao(complemento):
         return termos[1]
     else:
         return "NAO FORNECIDO"
+    
+
+def prepara_user_input_llm(problem, text_symptoms, text_mechanic):
+    user_input = f"""
+        PROBLEM: {problem}
+        TEXT_SYMPTOMS: {text_symptoms}
+        TEXT_MECHANIC: {text_mechanic}
+        Please output the JSON as instructed. Output the raw json, do not include ```json``` in the message.
+    """
+    return user_input
 
 
 ###################################################################################
@@ -506,12 +476,14 @@ def main():
                 num_errors += 1
                 continue
 
-            # Vamos ver se a OS já foi processada
+            # Vamos ver se a OS ainda não foi processada
             if df_os_classificada.empty:
                 print(f"OS: {num_os}", problem, text_symptoms, text_mechanic, key)
                 try:
+                    # Prepara user_input
+                    user_input = prepara_user_input_llm(problem, text_symptoms, text_mechanic)
                     # Classifica a OS
-                    result = openai_client.classify_mechanic_service(problem, text_symptoms, text_mechanic)
+                    result = openai_client.send_message(system_instructions, user_input)
                     result["KEY_HASH"] = key
                     result["SINTOMA"] = text_symptoms
                     result["CORRECAO"] = text_mechanic

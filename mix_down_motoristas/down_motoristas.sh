@@ -38,7 +38,7 @@ while true; do
 
   echo "[run] $(date '+%Y-%m-%d %H:%M:%S') starting job"
 
-  python -u down_motoristas.py >> /home/grupo_fctufg/logs/$(date +\%Y-\%m-\%d)-motoristas.txt
+  python -u /app/down_motoristas.py >> /home/grupo_fctufg/logs/$(date +\%Y-\%m-\%d)-motoristas.txt
 
   echo "[run] $(date '+%Y-%m-%d %H:%M:%S') finished job"
 done

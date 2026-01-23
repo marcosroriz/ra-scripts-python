@@ -14,7 +14,11 @@ else
 fi
 
 # 2️ Adiciona a linha do cron dinamicamente
-echo "${CONTAINER_CRON_MIX_UPDATE_VEICULOS} /app/mix_update_veiculos.sh" | crontab -
+{
+  echo "SHELL=/bin/bash"
+  echo "PATH=/usr/local/bin:/usr/bin:/bin"
+  echo "*/2 * * * * /bin/bash /app/mix_update_veiculos.sh >> /home/grupo_fctufg/logs/cron.log 2>&1"
+} | crontab -
 
 # 3️ Mostra o crontab atual (útil para debug)
 echo "Crontab atual:"

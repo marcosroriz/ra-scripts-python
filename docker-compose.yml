@@ -125,15 +125,6 @@ services:
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
 
-  rmtc_crawler_node:
-    build: ./rmtc_crawler_node
-    container_name: rmtc_crawler_node
-    restart: unless-stopped
-    env_file:
-      - ./.env
-    volumes:
-      - ./logs:/home/grupo_fctufg/logs/
-
   relatorio_llm_os:
     build: ./relatorio_llm_os
     container_name: relatorio_llm_os

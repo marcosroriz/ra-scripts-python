@@ -14,7 +14,11 @@ else
 fi
 
 # 2️ Adiciona a linha do cron dinamicamente
-echo "${CONTAINER_CRON_MONITORAMENTO_REGRA_OS} /app/monitoramento_job.sh" | crontab -
+{
+  echo "SHELL=/bin/bash"
+  echo "PATH=/usr/local/bin:/usr/bin:/bin"
+  echo "${CONTAINER_CRON_MONITORAMENTO_REGRA_OS} /bin/bash /app/monitoramento_job.sh >> /home/grupo_fctufg/logs/cron.log 2>&1"
+} | crontab -
 
 # 3️ Mostra o crontab atual (útil para debug)
 echo "Crontab atual:"

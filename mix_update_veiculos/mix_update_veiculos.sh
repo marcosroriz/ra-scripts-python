@@ -4,7 +4,7 @@ set -e
 cd /app
 
 # ===== CONFIG =====
-TARGET_TIME="03:30"
+TARGET_TIME="22:10"
 TZ="America/Sao_Paulo"
 LOG_DIR="/home/grupo_fctufg/logs"
 # ==================

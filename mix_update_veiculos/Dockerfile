@@ -26,10 +26,11 @@ COPY . .
 # Dá permissão de execução para o script
 RUN chmod +x /app/mix_update_veiculos.sh
 
-RUN chmod +x /app/start_cron_mix_update_veiculos.sh
+# RUN chmod +x /app/start_cron_mix_update_veiculos.sh
 
 # Cria diretórios de logs
 RUN mkdir -p /home/grupo_fctufg/logs/
 
 # Comando final
-CMD ["/app/start_cron_mix_update_veiculos.sh"]
+# CMD ["/app/start_cron_mix_update_veiculos.sh"]
+CMD ["/app/mix_update_veiculos.sh"]

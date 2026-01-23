@@ -175,5 +175,5 @@ class OSManager(object):
             conn.execute(text("REFRESH MATERIALIZED VIEW mat_view_retrabalho_10_dias_distinct;"))
             conn.execute(text("REFRESH MATERIALIZED VIEW mat_view_retrabalho_15_dias_distinct;"))
             conn.execute(text("REFRESH MATERIALIZED VIEW mat_view_retrabalho_30_dias_distinct;"))
-            conn.execute(text("REFRESH MATERIALIZED VIEW mat_view_os_pecas_hodometro_v3;"))
-            conn.execute(text("REFRESH MATERIALIZED VIEW mat_view_odometro_diario;"))
+            # conn.execute(text("REFRESH MATERIALIZED VIEW mat_view_os_pecas_hodometro_v3;"))
+            # conn.execute(text("REFRESH MATERIALIZED VIEW mat_view_odometro_diario;"))

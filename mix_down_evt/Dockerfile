@@ -26,10 +26,8 @@ COPY . .
 # Dá permissão de execução para o script
 RUN chmod +x /app/down_evt.sh
 
-RUN chmod +x /app/start_cron_mix_down_evt.sh
-
 # Cria diretórios de logs
 RUN mkdir -p /home/grupo_fctufg/logs/
 
 # Comando final
-CMD ["/app/start_cron_mix_down_evt.sh"]
+CMD ["/app/down_evt.sh"]

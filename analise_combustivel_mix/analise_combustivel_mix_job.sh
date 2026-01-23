@@ -42,7 +42,7 @@ while true; do
   for i in {0..2}
   do
     DATE=$(date -d "-$i day" +%Y-%m-%d)
-    python -u analise_combustivel_mix_main.py --data_baixar=$DATE >> /home/grupo_fctufg/logs/${DATE}-analise-combustivel-mix.txt
+    python -u /app/analise_combustivel_mix_main.py --data_baixar=$DATE >> /home/grupo_fctufg/logs/${DATE}-analise-combustivel-mix.txt
   done
 
   echo "[run] $(date '+%Y-%m-%d %H:%M:%S') finished job"

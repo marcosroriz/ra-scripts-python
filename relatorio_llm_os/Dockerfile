@@ -26,10 +26,8 @@ COPY . .
 # Dá permissão de execução para o script
 RUN chmod +x /app/relatorio_llm_os.sh
 
-RUN chmod +x /app/start_cron_relatorio_llm_os.sh
-
 # Cria diretórios de logs
 RUN mkdir -p /home/grupo_fctufg/logs/
 
 # Comando final
-CMD ["/app/start_cron_relatorio_llm_os.sh"]
+CMD ["/app/relatorio_llm_os.sh"]

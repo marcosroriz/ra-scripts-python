@@ -1,11 +1,24 @@
 #!/bin/bash
+set -e
 
-# Cron para rodar monitoramento_regra
-echo "INICIO DO SCRIPT"
-echo $(date)
+cd /app
 
-# Executa o script
-python -u monitoramento_regra_os.py >> /home/grupo_fctufg/logs/$(date +\%Y-\%m-\%d)-monitoramento-regra-os.txt
+# ===== CONFIG =====
+INTERVAL_SECONDS=$((15 * 60))   # 15 minutes
+# ==================
 
-echo "TERMINO DO SCRIPT"
-echo $(date)
+trap "echo '[stop] SIGTERM received'; exit 0" SIGTERM SIGINT
+
+echo "[start] monitoramento_regra_os scheduler started"
+echo "[start] interval = ${INTERVAL_SECONDS}s"
+echo "[start] time = $(date)"
+
+while true; do
+  echo "[run] $(date '+%Y-%m-%d %H:%M:%S') starting job"
+
+  python -u /app/monitoramento_regra_os.py >> /home/grupo_fctufg/logs/$(date +\%Y-\%m-\%d)-monitoramento-regra-os.txt
+
+  echo "[run] $(date '+%Y-%m-%d %H:%M:%S') finished job"
+
+  sleep "${INTERVAL_SECONDS}"
+done

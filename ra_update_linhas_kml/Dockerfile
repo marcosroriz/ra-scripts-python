@@ -24,12 +24,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Dá permissão de execução para o script
-RUN chmod +x /app/start_cron_ra_update_linhas_kml.sh
-
 RUN chmod +x /app/ra_update_linhas_kml.sh
 
 # Cria diretórios de logs
 RUN mkdir -p /home/grupo_fctufg/logs/
 
 # Comando final
-CMD ["/app/start_cron_ra_update_linhas_kml.sh"]
+CMD ["/app/ra_update_linhas_kml.sh"]

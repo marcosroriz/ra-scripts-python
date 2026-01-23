@@ -26,10 +26,8 @@ COPY . .
 # Dá permissão de execução para o script
 RUN chmod +x /app/analise_combustivel_mix_job.sh
 
-RUN chmod +x /app/start_cron_analise_combustivel_mix.sh
-
 # Cria diretórios de logs
 RUN mkdir -p /home/grupo_fctufg/logs/
 
 # Comando final
-CMD ["/app/start_cron_analise_combustivel_mix.sh"]
+CMD ["/app/analise_combustivel_mix_job.sh"]

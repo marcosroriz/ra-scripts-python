@@ -34,7 +34,7 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
-      
+
   mix_down_pecas:
     build: ./mix_down_pecas
     container_name: mix_down_pecas
@@ -106,7 +106,7 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
-     
+
   monitoramento_regra_os:
     build: ./monitoramento_regra_os
     container_name: monitoramento_regra_os
@@ -133,3 +133,13 @@ services:
       - ./.env
     volumes:
       - ./logs:/home/grupo_fctufg/logs/
+
+  db_refresh_pecas_views:
+    build: ./db_refresh_pecas_views
+    container_name: db_refresh_pecas_views
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/home/grupo_fctufg/logs/
+

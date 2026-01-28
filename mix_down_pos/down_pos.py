@@ -86,6 +86,8 @@ headers = {
     "Content-Type": "application/x-www-form-urlencoded",
 }
 
+AUTH_MAX_RETRIES = 3
+AUTH_RETRY_WAIT = 2 * 60 # minutes
 TOKEN = None
 AUTH_HEADERS = None
 AUTH_HEADERS_JSON = None
@@ -139,7 +141,17 @@ def download_posicao(asset_ids, data_inicio, data_fim):
 @click.option("--data_baixar", type=str, help="Data que irei baixar")
 def main(data_baixar):
     global TOKEN, AUTH_HEADERS, AUTH_HEADERS_JSON
-    authenticate()
+    
+    # Tenta autenticar AUTH_MAX_RETRIES vezes
+    for tentativa_autenticar in range(1, AUTH_MAX_RETRIES + 1):
+        try:
+            authenticate()
+        except requests.exceptions.Timeout as te:
+            print(f"Falha na autenticação (tentativa {tentativa_autenticar + 1}): {e}")
+            if tentativa_autenticar < AUTH_MAX_RETRIES - 1:
+                time.sleep(AUTH_RETRY_WAIT)
+            else:
+                raise e
 
     # Lista de Veículos
     url = MIX_API_URL + f"/api/assets/group/{MIX_GROUP_ID}"
@@ -238,7 +250,7 @@ def main(data_baixar):
                 continue
         except requests.exceptions.Timeout as te:
             print(datahoje, event_name, "DEU TIMEOUT")
-            time.sleep(10)
+            time.sleep(30)
             authenticate()
             continue
         except Exception as e:

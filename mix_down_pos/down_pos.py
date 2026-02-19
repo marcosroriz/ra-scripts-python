@@ -102,6 +102,19 @@ def get_auth_token():
         data=payload,
         auth=(MIX_API_USERNAME, MIX_API_PASSWORD),
     )
+    
+    if response.status_code != 200:
+        raise Exception(f"Auth failed: {response.status_code} - {response.text}")
+
+    data = None
+    try:
+        data = response.json()
+    except Exception:
+        raise Exception(f"Invalid JSON returned: {response.text}")
+
+    if "access_token" not in data:
+        raise Exception(f"No access_token in response: {data}")
+
     print(response.json())
     return response.json()["access_token"]
 

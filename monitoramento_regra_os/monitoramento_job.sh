@@ -1,11 +1,9 @@
 #!/bin/bash
-set -e
 
 cd /app
 
-# ===== CONFIG =====
-INTERVAL_SECONDS=$((15 * 60))   # 15 minutes
-# ==================
+INTERVAL_SECONDS=$((15 * 60))
+LOG_DIR="/home/grupo_fctufg/logs"
 
 trap "echo '[stop] SIGTERM received'; exit 0" SIGTERM SIGINT
 
@@ -14,11 +12,16 @@ echo "[start] interval = ${INTERVAL_SECONDS}s"
 echo "[start] time = $(date)"
 
 while true; do
-  echo "[run] $(date '+%Y-%m-%d %H:%M:%S') starting job"
+  (
+    echo "[run] $(date '+%Y-%m-%d %H:%M:%S') starting job"
 
-  python -u /app/monitoramento_regra_os.py >> /home/grupo_fctufg/logs/$(date +\%Y-\%m-\%d)-monitoramento-regra-os.txt
+    DATE=$(date +%Y-%m-%d)
 
-  echo "[run] $(date '+%Y-%m-%d %H:%M:%S') finished job"
+    python -u /app/monitoramento_regra_os.py >> "${LOG_DIR}/${DATE}-monitoramento-regra-os.txt" 2>&1 || echo "[error] monitoramento_regra_os failed"
+
+    echo "[run] $(date '+%Y-%m-%d %H:%M:%S') finished job"
+
+  ) || echo "[critical] unexpected failure in cycle"
 
   sleep "${INTERVAL_SECONDS}"
 done

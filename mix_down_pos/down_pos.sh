@@ -4,7 +4,7 @@ set -e
 cd /app
 
 # ===== CONFIG =====
-TARGET_TIME="17:00"
+TARGET_TIME="14:00"
 TZ="America/Sao_Paulo"
 LOG_DIR="/home/grupo_fctufg/logs"
 # ==================
@@ -43,6 +43,10 @@ while true; do
 
   # Baixa o dado do dia anterior (-1)
   dia_anterior=$(date -d "-1 day" +%Y-%m-%d)
+  python -u /app/down_pos.py --data_baixar=$dia_anterior >> /home/grupo_fctufg/logs/${dia_anterior}-pos-dia-anterior.txt
+
+  # Baixa o dado do dia anterior (-2)
+  dia_anterior=$(date -d "-2 day" +%Y-%m-%d)
   python -u /app/down_pos.py --data_baixar=$dia_anterior >> /home/grupo_fctufg/logs/${dia_anterior}-pos-dia-anterior.txt
 
   echo "[run] $(date '+%Y-%m-%d %H:%M:%S') finished job"
